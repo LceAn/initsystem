@@ -3,8 +3,9 @@
 [![Shell](https://img.shields.io/badge/Shell-脚本 -blue)]()
 [![License](https://img.shields.io/badge/许可证-MIT-green)]()
 [![Platform](https://img.shields.io/badge/平台-Linux-orange)]()
-[![Version](https://img.shields.io/badge/版本-1.0.1-red)]()
+[![Version](https://img.shields.io/badge/版本-1.0.2-red)]()
 [![Tested](https://img.shields.io/badge/测试-Ubuntu%2024.04-brightgreen)]()
+[![Mirrors](https://img.shields.io/badge/镜像源-5%20个 -purple)]()
 
 **Linux 系统初始化脚本**
 

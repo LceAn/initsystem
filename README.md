@@ -3,8 +3,9 @@
 [![Shell](https://img.shields.io/badge/Shell-Script-blue)]()
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 [![Platform](https://img.shields.io/badge/Platform-Linux-orange)]()
-[![Version](https://img.shields.io/badge/Version-1.0.1-red)]()
+[![Version](https://img.shields.io/badge/Version-1.0.2-red)]()
 [![Tested](https://img.shields.io/badge/Tested-Ubuntu%2024.04-brightgreen)]()
+[![Mirrors](https://img.shields.io/badge/Mirrors-5%20Sources-purple)]()
 
 **Linux System Initialization Script**
 
@@ -18,9 +19,11 @@ One-click script to complete basic Linux server configuration and common tool in
 
 - **Smart System Detection** - Auto-detect Ubuntu/Debian/CentOS/RHEL/Fedora/Arch/Alpine
 - **Permission Management** - Auto-detect root privilege, seamless sudo switch
-- **Source Switch** - Auto-switch GitHub/Gitee based on connection status
+- **Multi-Mirror Support** - 5 mirror sources (GitHub/Gitee/Aliyun/Tencent/USTC)
+- **Auto/Manual Mode** - Auto-detect or manual select mirror source
 - **System Info Display** - Show user, timezone, system version details
-- **Dependency Check** - Auto-detect and install sudo, wget, git, etc.
+- **Dependency Check** - Auto-detect and install sudo, wget, git, zsh, etc.
+- **Zsh Auto-Install** - Auto-install Zsh before Oh My Zsh
 - **Zsh Beautification** - Auto-install Oh My Zsh and common plugins
 - **One-click Uninstall** - Complete cleanup of all installed files and programs
 
@@ -38,13 +41,14 @@ cd initsystem
 # Make script executable
 chmod +x init_system.sh
 
-# Run installation
-./init_system.sh
+# Run installation (auto-detect mirror)
+./init_system.sh install
 
-# Or with parameters
-./init_system.sh install    # Execute installation
-./init_system.sh uninstall  # Execute uninstallation
-./init_system.sh help       # Show help
+# Or with manual mirror selection
+./init_system.sh --manual
+
+# Or interactive mode
+./init_system.sh
 ```
 
 ### Uninstall

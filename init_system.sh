@@ -18,9 +18,25 @@ OH_MY_ZSH_INSTALL_SCRIPT=(
   "https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh"
 )
 
+# 国内镜像源 | China Mirror Sources
+MIRROR_SOURCES=(
+  "GitHub (Default)"
+  "Gitee (China)"
+  "Aliyun (China)"
+  "Tencent (China)"
+  "USTC (China)"
+)
+
+# 镜像源 URL | Mirror URLs
+GITHUB_URL="https://raw.githubusercontent.com"
+GITEE_URL="https://gitee.com"
+ALIYUN_URL="https://mirrors.aliyun.com"
+TENCENT_URL="https://mirrors.cloud.tencent.com"
+USTC_URL="https://mirrors.ustc.edu.cn"
+
 Zsh_plugins=("zsh-users/zsh-autosuggestions" "zsh-users/zsh-completions" "zsh-users/zsh-syntax-highlighting" "zsh-users/zsh-history-substring-search" "MichaelAquilina/zsh-you-should-use")
 log_file="./log/init_system_log_$(date +"%Y%m%d_%H%M%S").log"
-version='1.0.0'
+version='1.0.2'
 
 # 创建日志文件 | Create log file
 mkdir -p ./log
@@ -145,18 +161,72 @@ showSystemInfo() {
   echo ""
 }
 
-# 检查网络连接 | Check network connection
+# 检查网络连接并选择镜像源 | Check network and select mirror
 checkNetwork() {
-  echo "${blue}检查网络连接... | Checking network...${end}"
-  if curl -Is https://github.com/robots.txt | head -n 1 | grep -q 200; then
-    echo "${green}当前机器属于境外服务器，已使用 GitHub 源。${end}"
-    echo "${green}Machine is overseas, using GitHub source.${end}"
-    OH_MY_ZSH_INSTALL="${OH_MY_ZSH_INSTALL_SCRIPT[0]}"
+  echo "${blue}检测网络连接... | Checking network connection...${end}"
+  
+  # 自动检测模式 | Auto-detect mode
+  if [ "${1:-auto}" = "auto" ]; then
+    echo "${yellow}自动检测模式 | Auto-detect mode${end}"
+    
+    # 测试 GitHub 连接
+    if curl -Is --connect-timeout 3 https://github.com/robots.txt 2>/dev/null | head -n 1 | grep -q 200; then
+      echo "${green}✓ 可以访问 GitHub，使用默认源${end}"
+      echo "${green}✓ GitHub accessible, using default source${end}"
+      OH_MY_ZSH_INSTALL="${OH_MY_ZSH_INSTALL_SCRIPT[0]}"
+      MIRROR_SOURCE="GitHub"
+    else
+      echo "${yellow}GitHub 访问受限，切换到 Gitee 源${end}"
+      echo "${yellow}GitHub restricted, switching to Gitee source${end}"
+      OH_MY_ZSH_INSTALL="${OH_MY_ZSH_INSTALL_SCRIPT[1]}"
+      MIRROR_SOURCE="Gitee"
+    fi
   else
-    echo "${green}当前机器属于国内服务器，已切换 Gitee 源。${end}"
-    echo "${green}Machine is in China, switched to Gitee source.${end}"
-    OH_MY_ZSH_INSTALL="${OH_MY_ZSH_INSTALL_SCRIPT[1]}"
+    # 手动选择模式 | Manual selection mode
+    echo "${yellow}请选择镜像源 | Please select mirror source:${end}"
+    echo ""
+    for i in "${!MIRROR_SOURCES[@]}"; do
+      echo "  $((i+1))) ${MIRROR_SOURCES[$i]}"
+    done
+    echo ""
+    
+    read -p "请输入选项 (1-5, 默认 1): " mirror_choice
+    mirror_choice=${mirror_choice:-1}
+    
+    case $mirror_choice in
+      1)
+        OH_MY_ZSH_INSTALL="${OH_MY_ZSH_INSTALL_SCRIPT[0]}"
+        MIRROR_SOURCE="GitHub"
+        echo "${green}已选择 GitHub 源${end}"
+        ;;
+      2)
+        OH_MY_ZSH_INSTALL="${OH_MY_ZSH_INSTALL_SCRIPT[1]}"
+        MIRROR_SOURCE="Gitee"
+        echo "${green}已选择 Gitee 源${end}"
+        ;;
+      3)
+        MIRROR_SOURCE="Aliyun"
+        echo "${green}已选择阿里云源（部分资源）${end}"
+        ;;
+      4)
+        MIRROR_SOURCE="Tencent"
+        echo "${green}已选择腾讯云源（部分资源）${end}"
+        ;;
+      5)
+        MIRROR_SOURCE="USTC"
+        echo "${green}已选择中科大源（部分资源）${end}"
+        ;;
+      *)
+        OH_MY_ZSH_INSTALL="${OH_MY_ZSH_INSTALL_SCRIPT[0]}"
+        MIRROR_SOURCE="GitHub"
+        echo "${yellow}无效选项，使用默认 GitHub 源${end}"
+        ;;
+    esac
   fi
+  
+  echo ""
+  echo "${green}当前镜像源 | Current mirror: ${MIRROR_SOURCE}${end}"
+  echo ""
 }
 
 # 检查 root 权限 | Check root privilege
@@ -325,15 +395,26 @@ showHelp() {
   echo "用法 | Usage: ./init_system.sh [选项 | option]"
   echo ""
   echo "选项 | Options:"
-  echo "  install    执行安装 | Execute installation"
+  echo "  install    执行安装（自动检测镜像源） | Execute installation (auto-detect mirror)"
   echo "  uninstall  执行卸载 | Execute uninstallation"
+  echo "  --manual   手动选择镜像源安装 | Manual select mirror source"
+  echo "  -m         手动选择镜像源（简写）| Manual select mirror (shortcut)"
   echo "  help       显示此帮助信息 | Show this help message"
   echo ""
   echo "无参数时进入交互式安装 | Run without arguments for interactive installation"
   echo ""
+  echo "镜像源 | Mirror Sources:"
+  echo "  1) GitHub (默认 | Default)"
+  echo "  2) Gitee (中国 | China)"
+  echo "  3) Aliyun (阿里云 | Alibaba Cloud)"
+  echo "  4) Tencent (腾讯云 | Tencent Cloud)"
+  echo "  5) USTC (中科大 | University of Science and Technology)"
+  echo ""
   echo "示例 | Examples:"
   echo "  ./init_system.sh           # 交互式安装"
-  echo "  ./init_system.sh install   # 直接安装"
+  echo "  ./init_system.sh install   # 自动安装"
+  echo "  ./init_system.sh --manual  # 手动选择镜像源"
+  echo "  ./init_system.sh -m        # 手动选择（简写）"
   echo "  ./init_system.sh uninstall # 卸载"
   echo "  ./init_system.sh help      # 显示帮助"
 }
@@ -350,12 +431,12 @@ main() {
   start
   showSystemInfo
   checkRoot
-  checkNetwork
   
   # 处理命令行参数
   case "${1:-}" in
     install)
       echo "${green}开始安装... | Starting installation...${end}"
+      checkNetwork "auto"
       installUtils
       Oh_my_zsh_install
       Install_zsh_plugins
@@ -369,6 +450,16 @@ main() {
     help|--help|-h)
       showHelp
       ;;
+    --manual|-m)
+      # 手动选择镜像源
+      checkNetwork "manual"
+      installUtils
+      Oh_my_zsh_install
+      Install_zsh_plugins
+      echo "${green}========================================${end}"
+      echo "${green}安装完成！ | Installation complete!${end}"
+      echo "${green}========================================${end}"
+      ;;
     "")
       # 交互式安装
       echo "${yellow}请选择操作 | Select operation:${end}"
@@ -380,6 +471,7 @@ main() {
       
       case $choice in
         1)
+          checkNetwork "manual"
           installUtils
           Oh_my_zsh_install
           Install_zsh_plugins
