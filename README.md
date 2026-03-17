@@ -3,28 +3,19 @@
 [![Shell](https://img.shields.io/badge/Shell-Script-blue)]()
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 [![Platform](https://img.shields.io/badge/Platform-Linux-orange)]()
+[![Version](https://img.shields.io/badge/Version-1.0.0-red)]()
 
-**Linux 系统初始化脚本 | Linux System Initialization Script**
-
-一键完成 Linux 服务器的基础配置和常用工具安装，支持多发行版自动检测和适配。
+**Linux System Initialization Script**
 
 One-click script to complete basic Linux server configuration and common tool installation, with automatic detection and adaptation for multiple distributions.
 
 ---
 
-## 📖 功能特性 | Features
+## 📖 Features
 
-### ✅ 已实现 | Implemented
+### ✅ Implemented
 
-- **智能系统检测** - 自动识别 Ubuntu/Debian/CentOS/RHEL/Fedora/Arch 等主流发行版
-- **权限管理** - 自动检测 root 权限，无缝切换 sudo
-- **源切换** - 根据 GitHub 连接状态自动切换 GitHub/Gitee 源
-- **系统信息展示** - 显示用户、时区、系统版本等详细信息
-- **依赖检查** - 自动检测并安装 sudo、wget、git 等基础工具
-- **Zsh 美化** - 自动安装 Oh My Zsh 及常用插件
-- **一键卸载** - 完全清理脚本安装的所有文件和程序
-
-- **Smart System Detection** - Auto-detect Ubuntu/Debian/CentOS/RHEL/Fedora/Arch and more
+- **Smart System Detection** - Auto-detect Ubuntu/Debian/CentOS/RHEL/Fedora/Arch/Alpine
 - **Permission Management** - Auto-detect root privilege, seamless sudo switch
 - **Source Switch** - Auto-switch GitHub/Gitee based on connection status
 - **System Info Display** - Show user, timezone, system version details
@@ -34,52 +25,53 @@ One-click script to complete basic Linux server configuration and common tool in
 
 ---
 
-## 🚀 快速开始 | Quick Start
+## 🚀 Quick Start
 
-### 安装 | Install
+### Install
 
 ```bash
-# 下载脚本
-wget https://raw.githubusercontent.com/LceAn/initsystem/main/init_system.sh
+# Clone the repository
+git clone https://github.com/LceAn/initsystem.git
+cd initsystem
+
+# Make script executable
 chmod +x init_system.sh
 
-# 运行
+# Run installation
 ./init_system.sh
 
-# 或带参数运行
-./init_system.sh install    # 执行安装
-./init_system.sh uninstall  # 执行卸载
-./init_system.sh help       # 显示帮助
+# Or with parameters
+./init_system.sh install    # Execute installation
+./init_system.sh uninstall  # Execute uninstallation
+./init_system.sh help       # Show help
 ```
 
-### 卸载 | Uninstall
+### Uninstall
 
 ```bash
-# 一键卸载（会删除所有安装的文件和配置）
+# One-click uninstall (removes all installed files and configurations)
 ./init_system.sh uninstall
 ```
 
 ---
 
-## 📋 支持的发行版 | Supported Distributions
+## 📋 Supported Distributions
 
-| 发行版 | 包管理器 | 状态 |
-|--------|---------|------|
-| Ubuntu | apt | ✅ 支持 |
-| Debian | apt | ✅ 支持 |
-| CentOS | yum/dnf | ✅ 支持 |
-| RHEL | yum/dnf | ✅ 支持 |
-| Fedora | dnf | ✅ 支持 |
-| Arch Linux | pacman | ✅ 支持 |
-| Alpine | apk | ✅ 支持 |
+| Distribution | Package Manager | Status |
+|--------------|-----------------|--------|
+| Ubuntu | apt | ✅ Supported |
+| Debian | apt | ✅ Supported |
+| CentOS | yum/dnf | ✅ Supported |
+| RHEL | yum/dnf | ✅ Supported |
+| Fedora | dnf | ✅ Supported |
+| Arch Linux | pacman | ✅ Supported |
+| Alpine | apk | ✅ Supported |
 
 ---
 
-## 🔧 功能详情 | Features Detail
+## 🔧 Features Detail
 
-### 1. 系统检测 | System Detection
-
-自动检测 Linux 发行版和版本，使用不同的包管理器：
+### 1. System Detection
 
 Auto-detect Linux distribution and version, use different package managers:
 
@@ -88,7 +80,7 @@ Auto-detect Linux distribution and version, use different package managers:
 apt update && apt install -y xxx
 
 # CentOS/RHEL/Fedora
-yum install -y xxx 或 dnf install -y xxx
+yum install -y xxx or dnf install -y xxx
 
 # Arch Linux
 pacman -S xxx
@@ -97,25 +89,18 @@ pacman -S xxx
 apk add xxx
 ```
 
-### 2. 安装的工具 | Installed Tools
+### 2. Installed Tools
 
-| 工具 | 用途 | 可选 |
-|------|------|------|
-| Oh My Zsh | 终端美化 | 是 |
-| zsh-autosuggestions | 自动补全插件 | 是 |
-| zsh-syntax-highlighting | 语法高亮插件 | 是 |
-| sudo, wget, git | 基础工具 | 否 |
+| Tool | Purpose | Optional |
+|------|---------|----------|
+| Oh My Zsh | Terminal beautification | Yes |
+| zsh-autosuggestions | Auto-completion plugin | Yes |
+| zsh-syntax-highlighting | Syntax highlighting plugin | Yes |
+| sudo, wget, git | Base tools | No |
 
-### 3. 卸载功能 | Uninstall Features
+### 3. Uninstall Features
 
-一键清理以下内容：
-
-- Oh My Zsh 及插件
-- 自定义配置文件
-- 脚本创建的临时文件
-- 环境变量配置
-
-One-click cleanup:
+One-click cleanup includes:
 
 - Oh My Zsh and plugins
 - Custom configuration files
@@ -124,43 +109,38 @@ One-click cleanup:
 
 ---
 
-## 📝 使用说明 | Usage
+## 📝 Usage
 
-### 参数说明 | Parameters
+### Parameters
 
-| 参数 | 说明 | 示例 |
-|------|------|------|
-| `install` | 执行安装 | `./init_system.sh install` |
-| `uninstall` | 执行卸载 | `./init_system.sh uninstall` |
-| `help` | 显示帮助信息 | `./init_system.sh help` |
-| 无参数 | 交互式选择 | `./init_system.sh` |
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `install` | Execute installation | `./init_system.sh install` |
+| `uninstall` | Execute uninstallation | `./init_system.sh uninstall` |
+| `help` | Show help message | `./init_system.sh help` |
+| No parameter | Interactive selection | `./init_system.sh` |
 
-### 执行流程 | Execution Flow
+### Execution Flow
 
 ```
-开始
+Start
   ↓
-检测 root 权限
+Check root privilege
   ↓
-检测系统版本
+Detect system version
   ↓
-安装基础依赖
+Install base dependencies
   ↓
-安装 Oh My Zsh
+Install Oh My Zsh
   ↓
-安装插件
+Install plugins
   ↓
-完成
+Complete
 ```
 
 ---
 
-## ⚠️ 注意事项 | Notes
-
-1. **root 权限** - 脚本需要 root 权限或 sudo 权限
-2. **网络要求** - 需要稳定的网络连接以下载工具
-3. **备份建议** - 建议先备份重要配置文件
-4. **卸载谨慎** - 卸载会删除 Oh My Zsh 配置，请提前备份
+## ⚠️ Notes
 
 1. **Root Privilege** - Script requires root or sudo privilege
 2. **Network** - Stable network connection required
@@ -169,21 +149,19 @@ One-click cleanup:
 
 ---
 
-## 🤝 贡献 | Contributing
-
-欢迎提交 Issue 和 Pull Request！
+## 🤝 Contributing
 
 Issues and Pull Requests are welcome!
 
 ---
 
-## 📄 许可证 | License
+## 📄 License
 
 MIT License
 
 ---
 
-## 📊 统计 | Stats
+## 📊 Stats
 
 ![GitHub stars](https://img.shields.io/github/stars/LceAn/initsystem)
 ![GitHub forks](https://img.shields.io/github/forks/LceAn/initsystem)
@@ -191,9 +169,13 @@ MIT License
 
 ---
 
-**最后更新 | Last Updated:** 2026-03-17  
-**维护者 | Maintainer:** [@LceAn](https://github.com/LceAn)
+## 🔗 Links
+
+- [GitHub Repository](https://github.com/LceAn/initsystem)
+- [Chinese README](README_CN.md) - 中文版本
 
 ---
 
-[English](#initsystem) | [中文](#initsystem)
+**Last Updated:** 2026-03-17  
+**Maintainer:** [@LceAn](https://github.com/LceAn)  
+**Version:** 1.0.0
