@@ -194,6 +194,24 @@ installUtils(){
   echo ""
 }
 
+# 安装 Zsh | Install Zsh
+installZsh(){
+  echo "${blue}检查 Zsh... | Checking Zsh...${end}"
+  if ! command -v zsh &> /dev/null; then
+    echo "${yellow}Zsh 未安装，正在安装... | Zsh not found, installing...${end}"
+    installPackage "zsh"
+    if command -v zsh &> /dev/null; then
+      echo "${green}✓ Zsh 安装完成 | Zsh installation complete${end}"
+    else
+      echo "${red}✗ Zsh 安装失败 | Zsh installation failed${end}"
+      return 1
+    fi
+  else
+    echo "${green}✓ Zsh 已安装 | Zsh already installed${end}"
+  fi
+  echo ""
+}
+
 # Oh My Zsh 安装 | Oh My Zsh installation
 Oh_my_zsh_install(){
   echo "${blue}检查 Oh My Zsh... | Checking Oh My Zsh...${end}"
@@ -202,6 +220,8 @@ Oh_my_zsh_install(){
   else
     echo "${yellow}正在安装 Oh My Zsh...${end}"
     echo "${yellow}Installing Oh My Zsh...${end}"
+    # 确保已安装 Zsh
+    installZsh
     curl -fsSL "$OH_MY_ZSH_INSTALL" | sudo -u "${SUDO_USER:-$USER}" bash
     echo "${green}✓ Oh My Zsh 安装完成 | installation complete${end}"
   fi
