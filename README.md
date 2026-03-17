@@ -3,7 +3,8 @@
 [![Shell](https://img.shields.io/badge/Shell-Script-blue)]()
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 [![Platform](https://img.shields.io/badge/Platform-Linux-orange)]()
-[![Version](https://img.shields.io/badge/Version-1.0.0-red)]()
+[![Version](https://img.shields.io/badge/Version-1.0.1-red)]()
+[![Tested](https://img.shields.io/badge/Tested-Ubuntu%2024.04-brightgreen)]()
 
 **Linux System Initialization Script**
 
@@ -146,6 +147,29 @@ Complete
 2. **Network** - Stable network connection required
 3. **Backup** - Backup important configuration files first
 4. **Uninstall Carefully** - Uninstall will remove Oh My Zsh config, backup first
+
+---
+
+## 🧪 测试结果 | Test Results
+
+**测试服务器 | Test Server:** Ubuntu 24.04.4 LTS  
+**测试时间 | Test Date:** 2026-03-17  
+**测试版本 | Test Version:** v1.0.1
+
+### ✅ 通过项 | Passed Tests
+
+| 测试项 | 状态 |
+|--------|------|
+| 系统检测 System Detection | ✅ 完美 Perfect |
+| 网络检测 Network Detection | ✅ 完美 Perfect |
+| 权限管理 Permission Management | ✅ 完美 Perfect |
+| 工具检查 Tool Check | ✅ 完美 Perfect |
+| Oh My Zsh 安装 | ✅ 已修复 Fixed |
+| 插件安装 Plugin Installation | ✅ 完美 Perfect |
+
+**总体评分 | Overall Rating:** ⭐⭐⭐⭐⭐ (5/5)
+
+📖 **详细测试报告 | Detailed Test Report:** [TEST_REPORT.md](TEST_REPORT.md)
 
 ---
 

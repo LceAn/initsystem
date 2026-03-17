@@ -3,7 +3,8 @@
 [![Shell](https://img.shields.io/badge/Shell-脚本 -blue)]()
 [![License](https://img.shields.io/badge/许可证-MIT-green)]()
 [![Platform](https://img.shields.io/badge/平台-Linux-orange)]()
-[![Version](https://img.shields.io/badge/版本-1.0.0-red)]()
+[![Version](https://img.shields.io/badge/版本-1.0.1-red)]()
+[![Tested](https://img.shields.io/badge/测试-Ubuntu%2024.04-brightgreen)]()
 
 **Linux 系统初始化脚本**
 
@@ -146,6 +147,29 @@ apk add xxx
 2. **网络要求** - 需要稳定的网络连接以下载工具
 3. **备份建议** - 建议先备份重要配置文件
 4. **卸载谨慎** - 卸载会删除 Oh My Zsh 配置，请提前备份
+
+---
+
+## 🧪 测试结果
+
+**测试服务器:** Ubuntu 24.04.4 LTS  
+**测试时间:** 2026-03-17  
+**测试版本:** v1.0.1
+
+### ✅ 通过项
+
+| 测试项 | 状态 |
+|--------|------|
+| 系统检测 | ✅ 完美 |
+| 网络检测 | ✅ 完美 |
+| 权限管理 | ✅ 完美 |
+| 工具检查 | ✅ 完美 |
+| Oh My Zsh 安装 | ✅ 已修复 |
+| 插件安装 | ✅ 完美 |
+
+**总体评分:** ⭐⭐⭐⭐⭐ (5/5)
+
+📖 **详细测试报告:** [TEST_REPORT.md](TEST_REPORT.md)
 
 ---
 
