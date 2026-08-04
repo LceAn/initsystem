@@ -102,7 +102,7 @@ detect_linux_distro() {
     DISTRO_NAME=$DISTRIB_DESCRIPTION
   elif [ -f /etc/redhat-release ]; then
     DISTRO="rhel"
-    DISTRO_VERSION=$(cat /etc/redhat-release | grep -oP '\d+\.\d+')
+    DISTRO_VERSION=$(grep -oP '\d+\.\d+' /etc/redhat-release)
     DISTRO_NAME=$(cat /etc/redhat-release)
   else
     DISTRO="unknown"
