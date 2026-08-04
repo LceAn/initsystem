@@ -27,28 +27,60 @@ MIRROR_SOURCES=(
   "USTC (China)"
 )
 
-# 镜像源 URL | Mirror URLs
-GITHUB_URL="https://raw.githubusercontent.com"
-GITEE_URL="https://gitee.com"
-ALIYUN_URL="https://mirrors.aliyun.com"
-TENCENT_URL="https://mirrors.cloud.tencent.com"
-USTC_URL="https://mirrors.ustc.edu.cn"
-
 Zsh_plugins=("zsh-users/zsh-autosuggestions" "zsh-users/zsh-completions" "zsh-users/zsh-syntax-highlighting" "zsh-users/zsh-history-substring-search" "MichaelAquilina/zsh-you-should-use")
-log_file="./log/init_system_log_$(date +"%Y%m%d_%H%M%S").log"
-version='1.0.2'
+version='1.1.0'
 
-# 创建日志文件 | Create log file
-mkdir -p ./log
-exec > >(tee -a "$log_file") 2>&1
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+LOG_DIR=${INITSYSTEM_LOG_DIR:-"$SCRIPT_DIR/log"}
+STATE_DIR=${INITSYSTEM_STATE_DIR:-"${XDG_STATE_HOME:-$HOME/.local/state}/initsystem"}
+ZSHRC_BACKUP="$STATE_DIR/zshrc.before-initsystem"
+ZSHRC_CREATED_MARKER="$STATE_DIR/zshrc-created"
+OH_MY_ZSH_MARKER="$STATE_DIR/oh-my-zsh-installed"
 
 # 定义颜色 | Define colors
-yellow=$(tput setaf 3)
-white=$(tput setaf 7)
-green=$(tput setaf 2)
-blue=$(tput setaf 4)
-red=$(tput setaf 1)
-end=$(tput sgr0)
+yellow=""
+white=""
+green=""
+blue=""
+red=""
+end=""
+
+setupRuntime() {
+  if [ -t 1 ] && command -v tput &> /dev/null; then
+    yellow=$(tput setaf 3)
+    white=$(tput setaf 7)
+    green=$(tput setaf 2)
+    blue=$(tput setaf 4)
+    red=$(tput setaf 1)
+    end=$(tput sgr0)
+  fi
+
+  mkdir -p "$LOG_DIR"
+  local log_file
+  log_file="$LOG_DIR/init_system_log_$(date +"%Y%m%d_%H%M%S").log"
+  exec > >(tee -a "$log_file") 2>&1
+}
+
+runPrivileged() {
+  if [ "$EUID" -eq 0 ]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
+}
+
+recordZshrcState() {
+  mkdir -p "$STATE_DIR"
+  if [ -f "$ZSHRC_BACKUP" ] || [ -f "$ZSHRC_CREATED_MARKER" ]; then
+    return
+  fi
+
+  if [ -f "$HOME/.zshrc" ]; then
+    cp -p "$HOME/.zshrc" "$ZSHRC_BACKUP"
+  else
+    : > "$ZSHRC_CREATED_MARKER"
+  fi
+}
 
 # ============================================================================
 # 系统检测函数 | System Detection Functions
@@ -57,11 +89,13 @@ end=$(tput sgr0)
 # 检测 Linux 发行版 | Detect Linux Distribution
 detect_linux_distro() {
   if [ -f /etc/os-release ]; then
+    # shellcheck disable=SC1091
     . /etc/os-release
     DISTRO=$ID
     DISTRO_VERSION=$VERSION_ID
     DISTRO_NAME=$PRETTY_NAME
   elif [ -f /etc/lsb-release ]; then
+    # shellcheck disable=SC1091
     . /etc/lsb-release
     DISTRO=$DISTRIB_ID
     DISTRO_VERSION=$DISTRIB_RELEASE
@@ -106,19 +140,19 @@ installPackage() {
   
   case $PKG_MANAGER in
     apt)
-      sudo apt update && sudo apt install -y "$package_name"
+      runPrivileged apt update && runPrivileged apt install -y "$package_name"
       ;;
     dnf|yum)
-      sudo $PKG_MANAGER install -y "$package_name"
+      runPrivileged "$PKG_MANAGER" install -y "$package_name"
       ;;
     pacman)
-      sudo pacman -S --noconfirm "$package_name"
+      runPrivileged pacman -S --noconfirm "$package_name"
       ;;
     zypper)
-      sudo zypper install -y "$package_name"
+      runPrivileged zypper install -y "$package_name"
       ;;
     apk)
-      sudo apk add "$package_name"
+      runPrivileged apk add "$package_name"
       ;;
     *)
       echo "${red}不支持的包管理器：$PKG_MANAGER${end}"
@@ -190,7 +224,7 @@ checkNetwork() {
     done
     echo ""
     
-    read -p "请输入选项 (1-5, 默认 1): " mirror_choice
+    read -r -p "请输入选项 (1-5, 默认 1): " mirror_choice
     mirror_choice=${mirror_choice:-1}
     
     case $mirror_choice in
@@ -205,14 +239,17 @@ checkNetwork() {
         echo "${green}已选择 Gitee 源${end}"
         ;;
       3)
+        OH_MY_ZSH_INSTALL="${OH_MY_ZSH_INSTALL_SCRIPT[1]}"
         MIRROR_SOURCE="Aliyun"
         echo "${green}已选择阿里云源（部分资源）${end}"
         ;;
       4)
+        OH_MY_ZSH_INSTALL="${OH_MY_ZSH_INSTALL_SCRIPT[1]}"
         MIRROR_SOURCE="Tencent"
         echo "${green}已选择腾讯云源（部分资源）${end}"
         ;;
       5)
+        OH_MY_ZSH_INSTALL="${OH_MY_ZSH_INSTALL_SCRIPT[1]}"
         MIRROR_SOURCE="USTC"
         echo "${green}已选择中科大源（部分资源）${end}"
         ;;
@@ -254,9 +291,9 @@ installUtils(){
   fi
   
   for util in "${utils[@]}"; do
-    if ! command -v $util &> /dev/null; then
+    if ! command -v "$util" &> /dev/null; then
       echo "${yellow}正在安装：${util}...${end}"
-      installPackage $util
+      installPackage "$util"
     else
       echo "${green}✓ ${util} 已安装 | installed${end}"
     fi
@@ -290,9 +327,23 @@ Oh_my_zsh_install(){
   else
     echo "${yellow}正在安装 Oh My Zsh...${end}"
     echo "${yellow}Installing Oh My Zsh...${end}"
-    # 确保已安装 Zsh
     installZsh
-    curl -fsSL "$OH_MY_ZSH_INSTALL" | sudo -u "${SUDO_USER:-$USER}" bash
+    recordZshrcState
+
+    local installer
+    installer=$(mktemp)
+    if ! curl -fsSL --proto '=https' --tlsv1.2 "$OH_MY_ZSH_INSTALL" -o "$installer"; then
+      rm -f -- "$installer"
+      echo "${red}✗ Oh My Zsh 安装脚本下载失败${end}"
+      return 1
+    fi
+    if ! env RUNZSH=no CHSH=no KEEP_ZSHRC=yes bash "$installer"; then
+      rm -f -- "$installer"
+      echo "${red}✗ Oh My Zsh 安装失败${end}"
+      return 1
+    fi
+    rm -f -- "$installer"
+    : > "$OH_MY_ZSH_MARKER"
     echo "${green}✓ Oh My Zsh 安装完成 | installation complete${end}"
   fi
   echo ""
@@ -304,7 +355,8 @@ Install_zsh_plugins(){
   local plugins_dir="$HOME/.oh-my-zsh/custom/plugins"
   
   for plugin in "${Zsh_plugins[@]}"; do
-    local plugin_name=$(basename $plugin)
+    local plugin_name
+    plugin_name=$(basename "$plugin")
     local plugin_path="$plugins_dir/$plugin_name"
     
     if [ -d "$plugin_path" ]; then
@@ -320,6 +372,7 @@ Install_zsh_plugins(){
   # 更新 .zshrc 配置文件
   if [ -f "$HOME/.zshrc" ]; then
     if ! grep -q "zsh-autosuggestions" "$HOME/.zshrc"; then
+      recordZshrcState
       sed -i 's/plugins=(git)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting)/g' "$HOME/.zshrc"
       echo "${green}✓ 已更新 .zshrc 配置 | .zshrc config updated${end}"
     fi
@@ -335,22 +388,30 @@ uninstallOhMyZsh() {
   echo "${yellow}卸载 Oh My Zsh...${end}"
   echo "${yellow}Uninstalling Oh My Zsh...${end}"
   
-  if [ -d "$HOME/.oh-my-zsh" ]; then
-    rm -rf "$HOME/.oh-my-zsh"
+  if [ -z "$HOME" ] || [ "$HOME" = "/" ]; then
+    echo "${red}拒绝在不安全的 HOME 路径执行卸载${end}"
+    return 1
+  fi
+
+  if [ -f "$OH_MY_ZSH_MARKER" ] && [ -d "$HOME/.oh-my-zsh" ]; then
+    rm -rf -- "$HOME/.oh-my-zsh"
     echo "${green}✓ 已删除 .oh-my-zsh 目录${end}"
+  elif [ -d "$HOME/.oh-my-zsh" ]; then
+    echo "${yellow}跳过 .oh-my-zsh：没有本脚本的安装记录${end}"
   fi
-  
-  if [ -f "$HOME/.zshrc" ]; then
-    rm "$HOME/.zshrc"
-    echo "${green}✓ 已删除 .zshrc 配置文件${end}"
+
+  if [ -f "$ZSHRC_BACKUP" ]; then
+    cp -p "$ZSHRC_BACKUP" "$HOME/.zshrc"
+    echo "${green}✓ 已恢复安装前的 .zshrc${end}"
+  elif [ -f "$ZSHRC_CREATED_MARKER" ] && [ -f "$HOME/.zshrc" ]; then
+    rm -f -- "$HOME/.zshrc"
+    echo "${green}✓ 已删除由本脚本创建的 .zshrc${end}"
+  elif [ -f "$HOME/.zshrc" ]; then
+    echo "${yellow}保留 .zshrc：没有本脚本的备份或创建记录${end}"
   fi
-  
-  # 恢复默认 shell 为 bash
-  if [ -f /etc/passwd ]; then
-    chsh -s /bin/bash $USER 2>/dev/null
-    echo "${green}✓ 已恢复默认 shell 为 bash${end}"
-  fi
-  
+
+  rm -f -- "$OH_MY_ZSH_MARKER" "$ZSHRC_BACKUP" "$ZSHRC_CREATED_MARKER"
+  rmdir "$STATE_DIR" 2>/dev/null || true
   echo "${green}✓ Oh My Zsh 卸载完成${end}"
   echo ""
 }
@@ -363,18 +424,18 @@ uninstall() {
   echo ""
   echo "此操作将删除以下内容："
   echo "This will remove:"
-  echo "  - Oh My Zsh 及所有插件"
-  echo "  - .zshrc 配置文件"
+  echo "  - 本脚本安装的 Oh My Zsh 及其插件"
+  echo "  - 恢复或移除本脚本管理的 .zshrc"
   echo "  - 脚本创建的日志文件"
   echo ""
-  read -p "确定要继续吗？(y/N): " confirm
+  read -r -p "确定要继续吗？(y/N): " confirm
   
   if [[ $confirm =~ ^[Yy]$ ]]; then
     uninstallOhMyZsh
     
-    # 清理日志文件
-    if [ -d "./log" ]; then
-      rm -rf "./log"
+    if [ -d "$LOG_DIR" ]; then
+      find "$LOG_DIR" -maxdepth 1 -type f -name 'init_system_log_*.log' -delete
+      rmdir "$LOG_DIR" 2>/dev/null || true
       echo "${green}✓ 已清理日志文件 | log files cleaned${end}"
     fi
     
@@ -424,6 +485,7 @@ showHelp() {
 # ============================================================================
 
 main() {
+  setupRuntime
   # 检测系统和包管理器
   detect_linux_distro
   detect_package_manager
@@ -467,7 +529,7 @@ main() {
       echo "  2) 卸载 | Uninstall"
       echo "  3) 退出 | Exit"
       echo ""
-      read -p "请输入选项 (1-3): " choice
+      read -r -p "请输入选项 (1-3): " choice
       
       case $choice in
         1)
@@ -501,5 +563,6 @@ main() {
   esac
 }
 
-# 执行主函数
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi

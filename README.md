@@ -1,228 +1,69 @@
 # initsystem
 
-[![Shell](https://img.shields.io/badge/Shell-Script-blue)]()
-[![License](https://img.shields.io/badge/License-MIT-green)]()
-[![Platform](https://img.shields.io/badge/Platform-Linux-orange)]()
-[![Version](https://img.shields.io/badge/Version-1.0.2-red)]()
-[![Tested](https://img.shields.io/badge/Tested-Ubuntu%2024.04-brightgreen)]()
-[![Mirrors](https://img.shields.io/badge/Mirrors-5%20Sources-purple)]()
+Linux initialization script for installing Zsh, Oh My Zsh, and a small set of plugins across common package managers.
 
-**Linux System Initialization Script**
+[中文说明](README_CN.md)
 
-One-click script to complete basic Linux server configuration and common tool installation, with automatic detection and adaptation for multiple distributions.
+## Supported systems
 
----
+The script detects `apt`, `dnf`, `yum`, `pacman`, `zypper`, or `apk`. It requires either root or a working `sudo` command and an HTTPS connection to GitHub or the configured Gitee fallback.
 
-## 📖 Features
+## Usage
 
-### ✅ Implemented
-
-- **Smart System Detection** - Auto-detect Ubuntu/Debian/CentOS/RHEL/Fedora/Arch/Alpine
-- **Permission Management** - Auto-detect root privilege, seamless sudo switch
-- **Multi-Mirror Support** - 5 mirror sources (GitHub/Gitee/Aliyun/Tencent/USTC)
-- **Auto/Manual Mode** - Auto-detect or manual select mirror source
-- **System Info Display** - Show user, timezone, system version details
-- **Dependency Check** - Auto-detect and install sudo, wget, git, zsh, etc.
-- **Zsh Auto-Install** - Auto-install Zsh before Oh My Zsh
-- **Zsh Beautification** - Auto-install Oh My Zsh and common plugins
-- **One-click Uninstall** - Complete cleanup of all installed files and programs
-
----
-
-## 🚀 Quick Start
-
-### Install
+Review the script before running commands with elevated privileges.
 
 ```bash
-# Clone the repository
 git clone https://github.com/LceAn/initsystem.git
 cd initsystem
-
-# Make script executable
 chmod +x init_system.sh
-
-# Run installation (auto-detect mirror)
+./init_system.sh help
 ./init_system.sh install
-
-# Or with manual mirror selection
-./init_system.sh --manual
-
-# Or interactive mode
-./init_system.sh
 ```
 
-### Uninstall
+Use `--manual` to choose a mirror interactively. The Aliyun, Tencent, and USTC choices still use the Gitee copy of the Oh My Zsh installer because those mirrors do not host that installer.
+
+## Safe uninstall boundary
+
+Version 1.1 records files it manages under `${XDG_STATE_HOME:-$HOME/.local/state}/initsystem`:
+
+- Existing `.zshrc` is backed up before installation.
+- A newly created `.zshrc` is marked as script-created.
+- `.oh-my-zsh` is deleted only when this version recorded its installation.
+- Without a state record, uninstall preserves existing `.oh-my-zsh` and `.zshrc`.
 
 ```bash
-# One-click uninstall (removes all installed files and configurations)
 ./init_system.sh uninstall
 ```
 
----
+Installations made by older versions have no state record and therefore require manual cleanup. This conservative behavior avoids deleting unrelated user configuration.
 
-## 📋 Supported Distributions
+## Security behavior
 
-| Distribution | Package Manager | Status |
-|--------------|-----------------|--------|
-| Ubuntu | apt | ✅ Supported |
-| Debian | apt | ✅ Supported |
-| CentOS | yum/dnf | ✅ Supported |
-| RHEL | yum/dnf | ✅ Supported |
-| Fedora | dnf | ✅ Supported |
-| Arch Linux | pacman | ✅ Supported |
-| Alpine | apk | ✅ Supported |
+- The Oh My Zsh installer is downloaded to a temporary file over HTTPS with TLS 1.2+, then executed with `RUNZSH=no`, `CHSH=no`, and `KEEP_ZSHRC=yes`.
+- The script does not automatically change the login shell.
+- Logs are written under `log/` and ignored by Git.
+- Package installation and remote scripts still execute privileged or third-party code; review URLs and changes before use.
 
----
-
-## 🔧 Features Detail
-
-### 1. System Detection
-
-Auto-detect Linux distribution and version, use different package managers:
+## Validation
 
 ```bash
-# Ubuntu/Debian
-apt update && apt install -y xxx
-
-# CentOS/RHEL/Fedora
-yum install -y xxx or dnf install -y xxx
-
-# Arch Linux
-pacman -S xxx
-
-# Alpine
-apk add xxx
+bash -n init_system.sh tests/test_uninstall.sh
+shellcheck init_system.sh tests/test_uninstall.sh
+bash tests/test_uninstall.sh
 ```
 
-### 2. Installed Tools
+The automated test uses a temporary home directory and verifies both managed restoration and preservation of unmanaged files.
 
-| Tool | Purpose | Optional |
-|------|---------|----------|
-| Oh My Zsh | Terminal beautification | Yes |
-| zsh-autosuggestions | Auto-completion plugin | Yes |
-| zsh-syntax-highlighting | Syntax highlighting plugin | Yes |
-| sudo, wget, git | Base tools | No |
+## License
 
-### 3. Uninstall Features
-
-One-click cleanup includes:
-
-- Oh My Zsh and plugins
-- Custom configuration files
-- Temporary files created by script
-- Environment variable configurations
-
----
-
-## 📝 Usage
-
-### Parameters
-
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `install` | Execute installation | `./init_system.sh install` |
-| `uninstall` | Execute uninstallation | `./init_system.sh uninstall` |
-| `help` | Show help message | `./init_system.sh help` |
-| No parameter | Interactive selection | `./init_system.sh` |
-
-### Execution Flow
-
-```
-Start
-  ↓
-Check root privilege
-  ↓
-Detect system version
-  ↓
-Install base dependencies
-  ↓
-Install Oh My Zsh
-  ↓
-Install plugins
-  ↓
-Complete
-```
-
----
-
-## ⚠️ Notes
-
-1. **Root Privilege** - Script requires root or sudo privilege
-2. **Network** - Stable network connection required
-3. **Backup** - Backup important configuration files first
-4. **Uninstall Carefully** - Uninstall will remove Oh My Zsh config, backup first
-
----
-
-## 🧪 测试结果 | Test Results
-
-**测试服务器 | Test Server:** Ubuntu 24.04.4 LTS  
-**测试时间 | Test Date:** 2026-03-17  
-**测试版本 | Test Version:** v1.0.1
-
-### ✅ 通过项 | Passed Tests
-
-| 测试项 | 状态 |
-|--------|------|
-| 系统检测 System Detection | ✅ 完美 Perfect |
-| 网络检测 Network Detection | ✅ 完美 Perfect |
-| 权限管理 Permission Management | ✅ 完美 Perfect |
-| 工具检查 Tool Check | ✅ 完美 Perfect |
-| Oh My Zsh 安装 | ✅ 已修复 Fixed |
-| 插件安装 Plugin Installation | ✅ 完美 Perfect |
-
-**总体评分 | Overall Rating:** ⭐⭐⭐⭐⭐ (5/5)
-
-📖 **详细测试报告 | Detailed Test Report:** [TEST_REPORT.md](TEST_REPORT.md)
-
----
-
-## 🤝 Contributing
-
-Issues and Pull Requests are welcome!
-
----
-
-## 📄 License
-
-MIT License
-
----
-
-## 📊 Stats
-
-![GitHub stars](https://img.shields.io/github/stars/LceAn/initsystem)
-![GitHub forks](https://img.shields.io/github/forks/LceAn/initsystem)
-![GitHub issues](https://img.shields.io/github/issues/LceAn/initsystem)
-
----
-
-## 🔗 Links
-
-- [GitHub Repository](https://github.com/LceAn/initsystem)
-- [Chinese README](README_CN.md) - 中文版本
-
----
-
-**Last Updated:** 2026-03-17  
-**Maintainer:** [@LceAn](https://github.com/LceAn)  
-**Version:** 1.0.0
-
----
-
-## 仓库结构
-
-- `README.md`
-- `README_CN.md`
-- `TEST_REPORT.md`
-- `init_system.sh`
+[MIT](LICENSE)
 
 <!-- repo-readme-standard:v1 -->
-## 仓库维护信息
+## Repository maintenance
 
-- 项目类型：产品/工具
-- 当前状态：待复盘
-- 可见性：public
-- 维护节奏：每月只选 1-2 个小更新
-- 相关仓库：无已确认的重复仓库关系；如需合并请先核对功能边界。
-- 维护边界：普通文档和代码更新可直接提交；归档、删除、历史重写或强制推送需单独确认。
+- Type: privileged Linux setup script
+- Status: maintained
+- Visibility: public
+- Cadence: review installers, package managers, and uninstall boundaries monthly
+- Related repositories: no directly mergeable duplicate found
+- Boundary: archive, deletion, history rewrite, or force-push requires separate approval

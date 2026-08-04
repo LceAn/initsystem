@@ -1,206 +1,69 @@
 # initsystem
 
-[![Shell](https://img.shields.io/badge/Shell-脚本 -blue)]()
-[![License](https://img.shields.io/badge/许可证-MIT-green)]()
-[![Platform](https://img.shields.io/badge/平台-Linux-orange)]()
-[![Version](https://img.shields.io/badge/版本-1.0.2-red)]()
-[![Tested](https://img.shields.io/badge/测试-Ubuntu%2024.04-brightgreen)]()
-[![Mirrors](https://img.shields.io/badge/镜像源-5%20个 -purple)]()
+面向常见 Linux 发行版的初始化脚本，用于安装 Zsh、Oh My Zsh 和一组常用插件。
 
-**Linux 系统初始化脚本**
+[English](README.md)
 
-一键完成 Linux 服务器的基础配置和常用工具安装，支持多发行版自动检测和适配。
+## 支持范围
 
----
+脚本自动检测 `apt`、`dnf`、`yum`、`pacman`、`zypper` 或 `apk`。运行环境需要 root 权限或可用的 `sudo`，并能通过 HTTPS 访问 GitHub 或 Gitee 回退源。
 
-## 📖 功能特性
+## 使用
 
-### ✅ 已实现
-
-- **智能系统检测** - 自动识别 Ubuntu/Debian/CentOS/RHEL/Fedora/Arch/Alpine 等主流发行版
-- **权限管理** - 自动检测 root 权限，无缝切换 sudo
-- **源切换** - 根据 GitHub 连接状态自动切换 GitHub/Gitee 源
-- **系统信息展示** - 显示用户、时区、系统版本等详细信息
-- **依赖检查** - 自动检测并安装 sudo、wget、git 等基础工具
-- **Zsh 美化** - 自动安装 Oh My Zsh 及常用插件
-- **一键卸载** - 完全清理脚本安装的所有文件和程序
-
----
-
-## 🚀 快速开始
-
-### 安装
+高权限脚本执行前应先阅读源码。
 
 ```bash
-# 克隆仓库
 git clone https://github.com/LceAn/initsystem.git
 cd initsystem
-
-# 赋予执行权限
 chmod +x init_system.sh
-
-# 运行安装
-./init_system.sh
-
-# 或带参数运行
-./init_system.sh install    # 执行安装
-./init_system.sh uninstall  # 执行卸载
-./init_system.sh help       # 显示帮助
+./init_system.sh help
+./init_system.sh install
 ```
 
-### 卸载
+使用 `--manual` 手动选择镜像。阿里云、腾讯云和中科大选项不托管 Oh My Zsh 安装器，因此该部分仍使用 Gitee 回退地址。
+
+## 安全卸载边界
+
+1.1 版本会在 `${XDG_STATE_HOME:-$HOME/.local/state}/initsystem` 记录由脚本管理的内容：
+
+- 安装前已有 `.zshrc` 时先备份。
+- 原本没有 `.zshrc` 时记录为脚本创建。
+- 只有存在本版本安装记录时才删除 `.oh-my-zsh`。
+- 没有状态记录时保留现有 `.oh-my-zsh` 和 `.zshrc`。
 
 ```bash
-# 一键卸载（会删除所有安装的文件和配置）
 ./init_system.sh uninstall
 ```
 
----
+旧版本安装没有状态记录，需要人工清理。这个限制用于避免误删用户原有配置。
 
-## 📋 支持的发行版
+## 安全行为
 
-| 发行版 | 包管理器 | 状态 |
-|--------|---------|------|
-| Ubuntu | apt | ✅ 支持 |
-| Debian | apt | ✅ 支持 |
-| CentOS | yum/dnf | ✅ 支持 |
-| RHEL | yum/dnf | ✅ 支持 |
-| Fedora | dnf | ✅ 支持 |
-| Arch Linux | pacman | ✅ 支持 |
-| Alpine | apk | ✅ 支持 |
+- Oh My Zsh 安装器先通过 TLS 1.2+ 下载到临时文件，再以 `RUNZSH=no`、`CHSH=no`、`KEEP_ZSHRC=yes` 执行。
+- 脚本不会自动修改登录 Shell。
+- 日志写入 `log/`，并由 Git 忽略。
+- 软件包安装和远程脚本仍会运行高权限或第三方代码，执行前必须复核来源和变更。
 
----
-
-## 🔧 功能详情
-
-### 1. 系统检测
-
-自动检测 Linux 发行版和版本，使用不同的包管理器：
+## 验证
 
 ```bash
-# Ubuntu/Debian
-apt update && apt install -y xxx
-
-# CentOS/RHEL/Fedora
-yum install -y xxx 或 dnf install -y xxx
-
-# Arch Linux
-pacman -S xxx
-
-# Alpine
-apk add xxx
+bash -n init_system.sh tests/test_uninstall.sh
+shellcheck init_system.sh tests/test_uninstall.sh
+bash tests/test_uninstall.sh
 ```
 
-### 2. 安装的工具
+自动测试使用临时 HOME，验证受管配置可恢复、无记录配置不会被删除。
 
-| 工具 | 用途 | 可选 |
-|------|------|------|
-| Oh My Zsh | 终端美化 | 是 |
-| zsh-autosuggestions | 自动补全插件 | 是 |
-| zsh-syntax-highlighting | 语法高亮插件 | 是 |
-| sudo, wget, git | 基础工具 | 否 |
+## 许可证
 
-### 3. 卸载功能
+[MIT](LICENSE)
 
-一键清理以下内容：
+<!-- repo-readme-standard:v1 -->
+## 仓库维护信息
 
-- Oh My Zsh 及插件
-- 自定义配置文件
-- 脚本创建的临时文件
-- 环境变量配置
-
----
-
-## 📝 使用说明
-
-### 参数说明
-
-| 参数 | 说明 | 示例 |
-|------|------|------|
-| `install` | 执行安装 | `./init_system.sh install` |
-| `uninstall` | 执行卸载 | `./init_system.sh uninstall` |
-| `help` | 显示帮助信息 | `./init_system.sh help` |
-| 无参数 | 交互式选择 | `./init_system.sh` |
-
-### 执行流程
-
-```
-开始
-  ↓
-检测 root 权限
-  ↓
-检测系统版本
-  ↓
-安装基础依赖
-  ↓
-安装 Oh My Zsh
-  ↓
-安装插件
-  ↓
-完成
-```
-
----
-
-## ⚠️ 注意事项
-
-1. **root 权限** - 脚本需要 root 权限或 sudo 权限
-2. **网络要求** - 需要稳定的网络连接以下载工具
-3. **备份建议** - 建议先备份重要配置文件
-4. **卸载谨慎** - 卸载会删除 Oh My Zsh 配置，请提前备份
-
----
-
-## 🧪 测试结果
-
-**测试服务器:** Ubuntu 24.04.4 LTS  
-**测试时间:** 2026-03-17  
-**测试版本:** v1.0.1
-
-### ✅ 通过项
-
-| 测试项 | 状态 |
-|--------|------|
-| 系统检测 | ✅ 完美 |
-| 网络检测 | ✅ 完美 |
-| 权限管理 | ✅ 完美 |
-| 工具检查 | ✅ 完美 |
-| Oh My Zsh 安装 | ✅ 已修复 |
-| 插件安装 | ✅ 完美 |
-
-**总体评分:** ⭐⭐⭐⭐⭐ (5/5)
-
-📖 **详细测试报告:** [TEST_REPORT.md](TEST_REPORT.md)
-
----
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
----
-
-## 📄 许可证
-
-MIT License
-
----
-
-## 📊 统计
-
-![GitHub stars](https://img.shields.io/github/stars/LceAn/initsystem)
-![GitHub forks](https://img.shields.io/github/forks/LceAn/initsystem)
-![GitHub issues](https://img.shields.io/github/issues/LceAn/initsystem)
-
----
-
-## 🔗 链接
-
-- [GitHub 仓库](https://github.com/LceAn/initsystem)
-- [English README](README.md) - English Version
-
----
-
-**最后更新:** 2026-03-17  
-**维护者:** [@LceAn](https://github.com/LceAn)  
-**版本:** 1.0.0
+- 项目类型：高权限 Linux 初始化脚本
+- 当前状态：维护中
+- 可见性：public
+- 维护节奏：每月检查安装源、包管理器和卸载边界
+- 相关仓库：未发现功能相同、可直接合并的仓库
+- 维护边界：归档、删除、历史重写或强制推送需单独确认
