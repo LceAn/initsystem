@@ -67,3 +67,11 @@ The automated test uses a temporary home directory and verifies both managed res
 - Cadence: review installers, package managers, and uninstall boundaries monthly
 - Related repositories: no directly mergeable duplicate found
 - Boundary: archive, deletion, history rewrite, or force-push requires separate approval
+
+---
+
+## Documentation
+
+- [CHANGELOG.md](CHANGELOG.md) — changelog
+- [ROADMAP.md](ROADMAP.md) — future plans
+- [TEST_REPORT.md](TEST_REPORT.md) — latest test report
